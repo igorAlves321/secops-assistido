@@ -4,7 +4,7 @@ from urllib.request import urlopen
 
 import streamlit as st
 
-API_URL = os.environ.get("SECOPS_API_URL", "http://localhost:8000")
+API_URL = os.environ.get("SECOPS_API_URL", "http://localhost:8080")
 
 st.title("SecOps Assistido")
 

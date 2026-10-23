@@ -34,7 +34,8 @@ Windows funciona, mas sem a cópia das bibliotecas para o editor.
 ```
 
 Constrói a imagem, instala as dependências (a partir do `uv.lock`), sobe a API
-(<http://localhost:8000>) e o dashboard (<http://localhost:8501>), gera os logs simulados em `data/` e prepara o editor.
+(<http://localhost:8080>) e o dashboard (<http://localhost:8501>), gera os logs simulados em `data/` e prepara o editor.
+Se alguma porta estiver ocupada, troque-a: `API_PORT=9000 DASHBOARD_PORT=9501 ./start.sh`.
 Pode ser repetido quando quiser: com o cache, só reconstrói o que mudou.
 
 ### Editar o código no VS Code

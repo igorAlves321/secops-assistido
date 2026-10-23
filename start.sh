@@ -11,5 +11,5 @@ docker compose run --rm --no-deps -T dev python -m secops_core.generator
 docker compose up -d --wait
 
 echo
-echo "API:       http://localhost:8000"
-echo "Dashboard: http://localhost:8501"
+echo "API:       http://localhost:${API_PORT:-8080}"
+echo "Dashboard: http://localhost:${DASHBOARD_PORT:-8501}"
