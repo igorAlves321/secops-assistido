@@ -27,10 +27,21 @@ Python 3.13 e dependências gerenciadas com [uv](https://docs.astral.sh/uv/).
 ### Primeiro uso
 
 ```bash
-docker compose build api
+make build
 ```
 
 Depois, no VS Code, abra o projeto e use **Dev Containers: Reopen in Container**
 (`F1`). O editor passa a usar o mesmo Python e as mesmas bibliotecas dos containers.
 O build da imagem vem antes porque o serviço `dev` reutiliza a imagem
 `secops-assistido:dev` gerada pelo serviço `api`.
+
+### Comandos
+
+`make help` lista tudo. Os principais:
+
+| Comando | O que faz |
+|---|---|
+| `make up` / `make down` | sobe e derruba api e dashboard |
+| `make logs` | acompanha os logs |
+| `make test` / `make lint` / `make format` | pytest, ruff check e ruff format no container |
+| `make add pkg=<nome>` | adiciona uma dependência e reconstrói a imagem |
