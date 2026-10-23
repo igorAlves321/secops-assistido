@@ -1,0 +1,25 @@
+# SecOps Assistido
+
+Detecção de anomalias em logs com explicação assistida. O mesmo núcleo de detecção
+(`secops_core`) roda em dois modos: local, para desenvolvimento e teste, e híbrido AWS,
+para portfólio e produção.
+
+![Arquitetura SecOps Assistido v2](docs/arquitetura-secops-v2.jpg)
+
+## Modos
+
+- **Modo A (local):** gerador de logs, detecção em Python (z-score, Isolation Forest,
+  regras de CloudTrail e modelagem de log), explicação por templates Jinja2 e Ollama em
+  Docker, persistência em SQLite, API FastAPI e dashboard Streamlit.
+- **Modo B (híbrido AWS):** CloudWatch Logs e CloudTrail, EventBridge a cada 5 minutos,
+  Lambda, SNS para alertas e DynamoDB (TTL de 14 dias), com a mesma API e o mesmo dashboard.
+
+## Status
+
+Em preparação. O trabalho começa pelo Modo A; o Modo B vem depois que o núcleo estiver
+funcionando.
+
+## Ambiente
+
+Docker Compose com a pasta do projeto montada nos containers, para hot reload do código.
+Python 3.13 e dependências gerenciadas com [uv](https://docs.astral.sh/uv/).
