@@ -23,3 +23,14 @@ funcionando.
 
 Docker Compose com a pasta do projeto montada nos containers, para hot reload do código.
 Python 3.13 e dependências gerenciadas com [uv](https://docs.astral.sh/uv/).
+
+### Primeiro uso
+
+```bash
+docker compose build api
+```
+
+Depois, no VS Code, abra o projeto e use **Dev Containers: Reopen in Container**
+(`F1`). O editor passa a usar o mesmo Python e as mesmas bibliotecas dos containers.
+O build da imagem vem antes porque o serviço `dev` reutiliza a imagem
+`secops-assistido:dev` gerada pelo serviço `api`.
