@@ -1,0 +1,42 @@
+x-app: &app
+  build: .
+  image: secops-assistido:dev
+  working_dir: /app
+  user: "1000:1000"
+  volumes:
+    - ./:/app
+  environment:
+    SECOPS_DATA_DIR: /app/data
+    WATCHFILES_FORCE_POLLING: "false"
+
+services:
+  api:
+    <<: *app
+    command: uvicorn secops_core.api:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/src
+    ports:
+      - "8000:8000"
+
+  dashboard:
+    <<: *app
+    command: >
+      streamlit run src/secops_core/dashboard.py
+      --server.address=0.0.0.0 --server.port=8501
+      --server.runOnSave=true --server.fileWatcherType=auto
+    environment:
+      SECOPS_DATA_DIR: /app/data
+      SECOPS_API_URL: http://api:8000
+    ports:
+      - "8501:8501"
+    depends_on:
+      - api
+
+  ollama:
+    image: ollama/ollama:latest
+    profiles: ["llm"]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+
+volumes:
+  ollama:
