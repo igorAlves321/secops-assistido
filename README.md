@@ -26,6 +26,9 @@ Python 3.13 e dependências gerenciadas com [uv](https://docs.astral.sh/uv/).
 
 ### Primeiro uso
 
+Recomendado: WSL com Ubuntu e o projeto clonado dentro do Linux (`~/projetos`). Em pasta do
+Windows funciona, mas sem a cópia das bibliotecas para o editor.
+
 ```bash
 ./start.sh
 ```
@@ -39,6 +42,7 @@ Pode ser repetido quando quiser: com o cache, só reconstrói o que mudou.
 O `start.sh` copia as bibliotecas da imagem para `.editor-packages/` (ignorada pelo Git,
 cerca de 540 MB) e o `.vscode/settings.json` aponta o Pylance para ela. Abrir a pasta no
 VS Code já dá autocompletar e nenhum import em vermelho, sem container e sem aviso.
+Em pastas do Windows (`C:\`, `D:\` ou `/mnt/...`) essa cópia é pulada, porque é muito lenta.
 Depois de mudar dependências, `make build` (ou `make add pkg=<nome>`) atualiza a cópia.
 
 Para rodar testes e depurar pelo editor, use **Dev Containers: Reopen in Container**

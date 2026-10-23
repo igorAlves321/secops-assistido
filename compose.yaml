@@ -6,7 +6,7 @@ x-app: &app
     - ./:/app
   environment:
     SECOPS_DATA_DIR: /app/data
-    WATCHFILES_FORCE_POLLING: "false"
+    WATCHFILES_FORCE_POLLING: "true"
 
 services:
   dev:
