@@ -10,6 +10,11 @@ x-app: &app
     WATCHFILES_FORCE_POLLING: "false"
 
 services:
+  dev:
+    <<: *app
+    profiles: ["dev"]
+    command: sleep infinity
+
   api:
     <<: *app
     command: uvicorn secops_core.api:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/src
