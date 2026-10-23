@@ -1,6 +1,7 @@
 {
   "name": "secops-assistido",
   "dockerComposeFile": ["../compose.yaml"],
+  "initializeCommand": "docker compose build api",
   "service": "dev",
   "runServices": ["dev"],
   "workspaceFolder": "/app",

@@ -30,13 +30,19 @@ Python 3.13 e dependências gerenciadas com [uv](https://docs.astral.sh/uv/).
 ./start.sh
 ```
 
-Constrói a imagem, instala as dependências (a partir do `uv.lock`) e sobe a API
-(<http://localhost:8000>) e o dashboard (<http://localhost:8501>). Pode ser repetido
-quando quiser: com o cache, só reconstrói o que mudou.
+Constrói a imagem, instala as dependências (a partir do `uv.lock`), sobe a API
+(<http://localhost:8000>) e o dashboard (<http://localhost:8501>) e prepara o editor.
+Pode ser repetido quando quiser: com o cache, só reconstrói o que mudou.
 
-Para editar com o mesmo Python e as mesmas bibliotecas dos containers, abra o projeto no
-VS Code e use **Dev Containers: Reopen in Container** (`F1`). O serviço `dev` reutiliza a
-imagem gerada pelo `start.sh`, por isso ele vem antes.
+### Editar o código no VS Code
+
+O `start.sh` copia as bibliotecas da imagem para `.editor-packages/` (ignorada pelo Git,
+cerca de 540 MB) e o `.vscode/settings.json` aponta o Pylance para ela. Abrir a pasta no
+VS Code já dá autocompletar e nenhum import em vermelho, sem container e sem aviso.
+Depois de mudar dependências, `make build` (ou `make add pkg=<nome>`) atualiza a cópia.
+
+Para rodar testes e depurar pelo editor, use **Dev Containers: Reopen in Container**
+(`F1`): ele constrói a imagem se preciso e abre o editor dentro do container.
 
 ### Comandos
 
@@ -46,5 +52,6 @@ imagem gerada pelo `start.sh`, por isso ele vem antes.
 |---|---|
 | `make up` / `make down` | sobe e derruba api e dashboard |
 | `make logs` | acompanha os logs |
+| `make editor` | atualiza a cópia das bibliotecas usada pelo editor |
 | `make test` / `make lint` / `make format` | pytest, ruff check e ruff format no container |
 | `make add pkg=<nome>` | adiciona uma dependência e reconstrói a imagem |

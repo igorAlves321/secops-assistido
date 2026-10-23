@@ -1,0 +1,7 @@
+{
+  "python.analysis.extraPaths": ["./.editor-packages", "./src"],
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true
+  }
+}

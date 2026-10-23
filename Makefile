@@ -1,9 +1,10 @@
 RUN = docker compose run --rm dev
 
-.PHONY: help build up down restart logs sh test lint format add
+.PHONY: help build editor up down restart logs sh test lint format add
 
 help:
 	@echo "build    constroi a imagem"
+	@echo "editor   copia as bibliotecas para o editor (VS Code)"
 	@echo "up       sobe api e dashboard"
 	@echo "down     derruba tudo"
 	@echo "restart  reinicia api e dashboard"
@@ -16,6 +17,10 @@ help:
 
 build:
 	docker compose build api
+	./scripts/sync-editor-libs.sh
+
+editor:
+	./scripts/sync-editor-libs.sh
 
 up:
 	docker compose up -d
