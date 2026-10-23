@@ -27,13 +27,16 @@ Python 3.13 e dependências gerenciadas com [uv](https://docs.astral.sh/uv/).
 ### Primeiro uso
 
 ```bash
-make build
+./start.sh
 ```
 
-Depois, no VS Code, abra o projeto e use **Dev Containers: Reopen in Container**
-(`F1`). O editor passa a usar o mesmo Python e as mesmas bibliotecas dos containers.
-O build da imagem vem antes porque o serviço `dev` reutiliza a imagem
-`secops-assistido:dev` gerada pelo serviço `api`.
+Constrói a imagem, instala as dependências (a partir do `uv.lock`) e sobe a API
+(<http://localhost:8000>) e o dashboard (<http://localhost:8501>). Pode ser repetido
+quando quiser: com o cache, só reconstrói o que mudou.
+
+Para editar com o mesmo Python e as mesmas bibliotecas dos containers, abra o projeto no
+VS Code e use **Dev Containers: Reopen in Container** (`F1`). O serviço `dev` reutiliza a
+imagem gerada pelo `start.sh`, por isso ele vem antes.
 
 ### Comandos
 
