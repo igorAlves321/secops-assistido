@@ -31,7 +31,7 @@ Python 3.13 e dependências gerenciadas com [uv](https://docs.astral.sh/uv/).
 ```
 
 Constrói a imagem, instala as dependências (a partir do `uv.lock`), sobe a API
-(<http://localhost:8000>) e o dashboard (<http://localhost:8501>) e prepara o editor.
+(<http://localhost:8000>) e o dashboard (<http://localhost:8501>), gera os logs simulados em `data/` e prepara o editor.
 Pode ser repetido quando quiser: com o cache, só reconstrói o que mudou.
 
 ### Editar o código no VS Code
