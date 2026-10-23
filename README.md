@@ -53,5 +53,6 @@ Para rodar testes e depurar pelo editor, use **Dev Containers: Reopen in Contain
 | `make up` / `make down` | sobe e derruba api e dashboard |
 | `make logs` | acompanha os logs |
 | `make editor` | atualiza a cópia das bibliotecas usada pelo editor |
+| `make generate` | gera `data/logs_simulados.jsonl` com tráfego normal e anomalias marcadas |
 | `make test` / `make lint` / `make format` | pytest, ruff check e ruff format no container |
 | `make add pkg=<nome>` | adiciona uma dependência e reconstrói a imagem |

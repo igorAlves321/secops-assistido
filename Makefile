@@ -1,10 +1,11 @@
 RUN = docker compose run --rm dev
 
-.PHONY: help build editor up down restart logs sh test lint format add
+.PHONY: help build editor generate up down restart logs sh test lint format add
 
 help:
 	@echo "build    constroi a imagem"
 	@echo "editor   copia as bibliotecas para o editor (VS Code)"
+	@echo "generate gera data/logs_simulados.jsonl"
 	@echo "up       sobe api e dashboard"
 	@echo "down     derruba tudo"
 	@echo "restart  reinicia api e dashboard"
@@ -21,6 +22,9 @@ build:
 
 editor:
 	./scripts/sync-editor-libs.sh
+
+generate:
+	$(RUN) python -m secops_core.generator
 
 up:
 	docker compose up -d
