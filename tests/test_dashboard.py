@@ -1,5 +1,6 @@
 import io
 import json
+import re
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 
@@ -27,6 +28,14 @@ METRICS = {
     "alerts_by_detector": {"rules": 1, "iforest": 1},
     "alerts_by_user": {"diego": 1, "alice": 1},
 }  # fmt: skip
+
+
+def explanation(at):
+    """Texto da explicação na tela (o fake da API devolve 'Explicação do alerta N')."""
+    [found] = [
+        m.value for m in at.markdown if re.fullmatch(r"Explicação do alerta \d+( \+ IA)?", m.value)
+    ]
+    return found
 
 
 class FakeApi:
@@ -111,27 +120,35 @@ def test_shows_kpis_and_charts(app):
 def test_shows_template_explanation_of_the_first_alert_by_time(app):
     at, api = app()
 
-    assert at.selectbox[0].value == 2  # ordenado por horário: o da alice (06/01) vem antes
-    assert at.text[0].value == "Explicação do alerta 2"
+    assert at.selectbox[1].value == 2  # ordenado por horário: o da alice (06/01) vem antes
+    assert explanation(at) == "Explicação do alerta 2"
     assert ("GET", "/alerts/2/explanation") in api.requests
 
 
 def test_selecting_another_alert_changes_the_explanation(app):
     at, _ = app()
 
-    at.selectbox[0].select(1).run()
+    at.selectbox[1].select(1).run()
 
-    assert at.text[0].value == "Explicação do alerta 1"
+    assert explanation(at) == "Explicação do alerta 1"
 
 
 def test_filters_narrow_the_alerts(app):
     at, _ = app()
 
-    at.multiselect[0].unselect("medium").run()  # gravidade
+    at.checkbox(key="sev-medium").uncheck().run()
 
-    assert at.selectbox[0].options == ["#1 · high · diego · 2026-01-07T17:00"]
-    at.multiselect[0].unselect("high").run()
+    assert at.selectbox[1].options == ["Nº 1 · alta · diego · 07/01/2026 17:00"]
+    at.checkbox(key="sev-high").uncheck().run()
     assert "Nenhum alerta" in at.info[0].value
+
+
+def test_user_filter_narrows_the_alerts(app):
+    at, _ = app()
+
+    at.selectbox[0].select("alice").run()
+
+    assert at.selectbox[1].options == ["Nº 2 · média · alice · 06/01/2026 10:00"]
 
 
 def test_ai_button_shows_model_summary(app):
@@ -139,7 +156,7 @@ def test_ai_button_shows_model_summary(app):
 
     at.button(key="ai").click().run()
 
-    assert at.text[0].value.endswith("+ IA")
+    assert explanation(at).endswith("+ IA")
     assert not at.warning
     assert any("ai=True" in path for _, path in api.requests)
 
@@ -150,7 +167,7 @@ def test_ai_button_warns_when_model_is_off(app):
     at.button(key="ai").click().run()
 
     assert "make llm" in at.warning[0].value
-    assert at.text[0].value == "Explicação do alerta 2"  # o template continua na tela
+    assert explanation(at) == "Explicação do alerta 2"  # o template continua na tela
 
 
 def test_run_button_posts_and_reports(app):

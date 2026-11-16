@@ -1,0 +1,8 @@
+# Contraste (WCAG 1.4.3, mínimo AA 4,5:1). Os padrões do Streamlit reprovam em dois pontos:
+# - primaryColor: azul escuro; texto branco sobre ele e ele sobre branco passam de 7:1.
+# - textColor: o Streamlit clareia essa cor para legendas e cabeçalhos de tabela; com o preto
+#   quase puro o cinza derivado fica acima de 5:1 (com o padrão #31333F dava 3,68:1).
+[theme]
+base = "light"
+primaryColor = "#0b4f9e"
+textColor = "#111111"
