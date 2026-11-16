@@ -31,7 +31,7 @@ gerador ──> logs_simulados.jsonl ──> parser ──> detectores ──> p
 ```
 
 1. **Parser** (`parser.py`): valida e normaliza cada evento (`LogEvent`); linha inválida dá erro com o número dela.
-2. **Detectores** (`detectors/`): regras (ação sensível, 5+ logins falhos seguidos, sucesso de IP externo),
+2. **Detectores** (`detectors/`): regras (adulteração do log, escalada de privilégio, S3 público, uso do root, 5+ logins falhos seguidos, sucesso de IP externo),
    Z-Score do volume por usuário e hora, e Isolation Forest sobre o comportamento de cada evento.
 3. **Pipeline** (`pipeline.py`): roda os três, junta alertas do mesmo usuário com janelas que se
    sobrepõem (fica o mais grave, com os detectores que concordaram) e grava no SQLite.
@@ -45,9 +45,9 @@ Documentação interativa em `/docs`.
 | Endpoint | O que faz |
 |---|---|
 | `POST /run` | lê `data/logs_simulados.jsonl`, roda os detectores e substitui os alertas |
-| `GET /alerts`, `GET /alerts/{id}` | alertas, com filtros `severity`, `detector` e `limit` |
+| `GET /alerts`, `GET /alerts/{id}` | alertas, com filtros `severity`, `detector`, `user`, `rule`, `limit` e `offset` |
 | `GET /alerts/{id}/explanation` | explicação por template; `?ai=true` pede também o resumo do Ollama (20 a 90 s) |
-| `GET /logs` | logs, com filtros `user`, `start`, `end` e `limit` |
+| `GET /logs` | logs, com filtros `user`, `action`, `start`, `end`, `limit` e `offset` |
 | `GET /metrics` | totais e quebras por gravidade, detector e usuário |
 
 ### Limites que você precisa saber
@@ -126,3 +126,9 @@ Para rodar testes e depurar pelo editor, use **Dev Containers: Reopen in Contain
 O Ollama fica no profile `llm` do compose, então `./start.sh` não o sobe nem baixa o modelo
 (cerca de 2 GB). Sem ele, as explicações dos alertas vêm dos templates Jinja2. Para ligá-lo,
 rode `make llm` uma vez; o modelo fica guardado no volume `ollama`.
+
+## Referências
+
+O catálogo de regras de CloudTrail (adulteração do log, escalada de privilégio, S3 público e uso do
+root) foi inspirado no projeto [Landoftha/secops_assistido](https://github.com/Landoftha/secops_assistido),
+da mesma atividade Mãos na Tech. O código aqui é próprio.
