@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS logs (
     UNIQUE (timestamp, user, source_ip, action)
 );
 CREATE INDEX IF NOT EXISTS idx_logs_timestamp ON logs (timestamp);
+CREATE INDEX IF NOT EXISTS idx_logs_user ON logs (user);
 CREATE TABLE IF NOT EXISTS alerts (
     id INTEGER PRIMARY KEY,
     detector TEXT NOT NULL,
@@ -30,6 +31,7 @@ CREATE TABLE IF NOT EXISTS alerts (
     explanation TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_alerts_timestamp ON alerts (timestamp);
+CREATE INDEX IF NOT EXISTS idx_alerts_severity ON alerts (severity);
 """
 
 
@@ -42,8 +44,9 @@ def connect(path: str | Path | None = None) -> sqlite3.Connection:
     path = str(path or default_path())
     if path != ":memory:":
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(path, check_same_thread=False)  # uma conexão por requisição da API
+    conn = sqlite3.connect(path, timeout=30, check_same_thread=False)  # uma conexão por requisição
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")  # leitores (API) não travam com o pipeline gravando
     conn.executescript(SCHEMA)
     if "rule" not in {r["name"] for r in conn.execute("PRAGMA table_info(alerts)")}:
         conn.execute("ALTER TABLE alerts ADD COLUMN rule TEXT")  # banco criado antes da coluna
