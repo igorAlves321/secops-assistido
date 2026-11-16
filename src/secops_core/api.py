@@ -93,9 +93,3 @@ def run(conn: Conn) -> dict[str, int]:
     except LogParseError as exc:
         raise HTTPException(422, str(exc)) from exc
     return pipeline.run(conn, events)
-
-
-# Demonstração do hot reload: tire o "# " das linhas abaixo, salve e abra /ola
-# @app.get("/ola")
-# def ola() -> dict[str, str]:
-#     return {"mensagem": "ola, turma"}
