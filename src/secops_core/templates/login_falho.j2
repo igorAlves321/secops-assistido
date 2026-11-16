@@ -1,0 +1,6 @@
+{% extends "base.j2" %}
+{% block resumo %}{{ alert.description }}: {{ alert.score|int }} tentativas de login seguidas, sem sucesso.{% endblock %}
+{% block risco %}É o padrão de um ataque de força bruta ou de preenchimento de credenciais contra a conta de {{ alert.user }}.{% endblock %}
+{% block acoes %}1. Bloquear o IP de origem citado acima.
+2. Verificar se algum login de {{ alert.user }} deu certo logo depois da sequência.
+3. Se sim, trocar a senha e revogar as sessões de {{ alert.user }}; se não, ativar MFA.{% endblock %}

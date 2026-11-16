@@ -1,0 +1,6 @@
+{% extends "base.j2" %}
+{% block resumo %}{{ alert.description }}.{% endblock %}
+{% block risco %}O acesso veio de fora da rede interna, o que é incomum para {{ alert.user }}. Pode ser trabalho remoto legítimo ou uma credencial roubada.{% endblock %}
+{% block acoes %}1. Confirmar com {{ alert.user }} se estava fora do escritório.
+2. Verificar a localização do IP e as ações feitas na sessão.
+3. Se não for legítimo, revogar a sessão e trocar as credenciais.{% endblock %}

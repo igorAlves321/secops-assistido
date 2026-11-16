@@ -8,6 +8,7 @@ from pathlib import Path
 from secops_core import db
 from secops_core.alert import Alert
 from secops_core.detectors import iforest, rules, zscore
+from secops_core.explain import explain
 from secops_core.parser import LogEvent, load_jsonl
 
 DETECTORS = [rules, zscore, iforest]
@@ -57,6 +58,8 @@ def run(conn: sqlite3.Connection, events: list[LogEvent]) -> dict[str, int]:
     alerts = merge(raw)
     db.clear_alerts(conn)
     db.insert_alerts(conn, alerts)
+    for saved in db.get_alerts(conn):
+        db.set_explanation(conn, saved.id, explain(saved))
     return {
         "logs": len(events),
         "novos": new_logs,

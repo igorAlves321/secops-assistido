@@ -18,7 +18,14 @@ def detect(events: list[LogEvent]) -> list[Alert]:
 
 def _sensitive_actions(events: list[LogEvent]) -> list[Alert]:
     return [
-        Alert("rules", "high", e.user, e.timestamp, f"Ação sensível {e.action} por {e.user}")
+        Alert(
+            "rules",
+            "high",
+            e.user,
+            e.timestamp,
+            f"Ação sensível {e.action} por {e.user}",
+            rule="acao_sensivel",
+        )
         for e in events
         if e.action in SENSITIVE_ACTIONS
     ]
@@ -47,6 +54,7 @@ def _failed_logins(events: list[LogEvent]) -> list[Alert]:
                         run[0].timestamp,
                         f"{len(run)} logins falhos seguidos de {user} (IP {ips})",
                         score=float(len(run)),
+                        rule="login_falho",
                     )
                 )
             run = [e] if e else []
@@ -61,6 +69,7 @@ def _external_ips(events: list[LogEvent]) -> list[Alert]:
             e.user,
             e.timestamp,
             f"{e.action} com sucesso de IP externo {e.source_ip}",
+            rule="ip_externo",
         )
         for e in events
         if e.success and ipaddress.ip_address(e.source_ip).is_global

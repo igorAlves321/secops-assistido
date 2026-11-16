@@ -11,4 +11,5 @@ class Alert:
     description: str
     score: float | None = None
     explanation: str | None = None
+    rule: str | None = None  # qual regra gerou o alerta; escolhe o template de explicação
     id: int | None = None  # preenchido pelo banco

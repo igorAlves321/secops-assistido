@@ -1,0 +1,5 @@
+{% extends "base.j2" %}
+{% block resumo %}{{ alert.description }}. O modelo achou o comportamento diferente do padrão aprendido (pontuação {{ alert.score }}).{% endblock %}
+{% block risco %}Esse detector tem mais falsos positivos que as regras: um evento isolado e comum costuma ser só ruído. Ganha peso quando outro detector também aponta o mesmo trecho.{% endblock %}
+{% block acoes %}1. Ver se a descrição traz também outro detector; se sim, tratar como prioridade.
+2. Se for um evento isolado, olhar o contexto de {{ alert.user }} no mesmo horário e arquivar se for normal.{% endblock %}

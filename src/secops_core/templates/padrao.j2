@@ -1,0 +1,5 @@
+{% extends "base.j2" %}
+{% block resumo %}{{ alert.description }}.{% endblock %}
+{% block risco %}O detector {{ alert.detector }} marcou esse comportamento de {{ alert.user }} como fora do normal.{% endblock %}
+{% block acoes %}1. Revisar a atividade de {{ alert.user }} nesse horário.
+2. Escalar se não houver explicação.{% endblock %}

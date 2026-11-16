@@ -33,6 +33,7 @@ def detect(events: list[LogEvent]) -> list[Alert]:
                         hour,
                         f"{count} eventos de {user} em uma hora (média {avg:.1f}, z={z:.1f})",
                         score=round(z, 2),
+                        rule="volume",
                     )
                 )
     return sorted(alerts, key=lambda a: (a.timestamp, a.user))

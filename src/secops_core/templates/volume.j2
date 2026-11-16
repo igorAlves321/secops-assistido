@@ -1,0 +1,6 @@
+{% extends "base.j2" %}
+{% block resumo %}{{ alert.description }}. O volume ficou {{ alert.score }} desvios-padrão acima do normal de {{ alert.user }}.{% endblock %}
+{% block risco %}Um pico de atividade pode indicar automação indevida, uma credencial em uso por terceiros ou apenas um trabalho em lote legítimo.{% endblock %}
+{% block acoes %}1. Ver quais ações compõem o pico.
+2. Perguntar a {{ alert.user }} se havia uma tarefa em lote.
+3. Se não houver explicação, tratar como credencial comprometida.{% endblock %}

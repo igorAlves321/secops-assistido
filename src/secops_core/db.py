@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS alerts (
     user TEXT NOT NULL,
     timestamp TEXT NOT NULL,
     description TEXT NOT NULL,
+    rule TEXT,
     score REAL,
     explanation TEXT
 );
@@ -44,6 +45,8 @@ def connect(path: str | Path | None = None) -> sqlite3.Connection:
     conn = sqlite3.connect(path)
     conn.row_factory = sqlite3.Row
     conn.executescript(SCHEMA)
+    if "rule" not in {r["name"] for r in conn.execute("PRAGMA table_info(alerts)")}:
+        conn.execute("ALTER TABLE alerts ADD COLUMN rule TEXT")  # banco criado antes da coluna
     return conn
 
 
@@ -86,7 +89,7 @@ def insert_alerts(conn: sqlite3.Connection, alerts: list[Alert]) -> None:
     with conn:
         conn.executemany(
             "INSERT INTO alerts (detector, severity, user, timestamp, description, score,"
-            " explanation) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            " explanation, rule) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
             [
                 (
                     a.detector,
@@ -96,6 +99,7 @@ def insert_alerts(conn: sqlite3.Connection, alerts: list[Alert]) -> None:
                     a.description,
                     a.score,
                     a.explanation,
+                    a.rule,
                 )
                 for a in alerts
             ],
@@ -111,6 +115,7 @@ def _alert(row: sqlite3.Row) -> Alert:
         description=row["description"],
         score=row["score"],
         explanation=row["explanation"],
+        rule=row["rule"],
         id=row["id"],
     )
 

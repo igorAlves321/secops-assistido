@@ -83,6 +83,7 @@ def detect(events: list[LogEvent]) -> list[Alert]:
                     first.timestamp,
                     f"{len(group)} evento(s) atípico(s) de {user}: {actions}",
                     score=round(max(s for _, s in group), 3),
+                    rule="atipico",
                 )
             )
             group = [row] if row else []
