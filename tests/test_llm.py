@@ -46,7 +46,7 @@ def ollama(monkeypatch):
 
 
 def test_ask_returns_stripped_answer(ollama):
-    assert llm.ask("oi") == "Parece força bruta."
+    assert llm.ask_ollama("oi") == "Parece força bruta."
     assert ollama.requests[0]["model"] == "modelo-teste"
     assert ollama.requests[0]["stream"] is False
 
@@ -54,28 +54,28 @@ def test_ask_returns_stripped_answer(ollama):
 def test_ask_without_config_returns_none(monkeypatch):
     monkeypatch.delenv("OLLAMA_URL", raising=False)
 
-    assert llm.ask("oi") is None
+    assert llm.ask_ollama("oi") is None
 
 
 def test_ask_unreachable_returns_none(monkeypatch):
     monkeypatch.setenv("OLLAMA_URL", "http://127.0.0.1:1")
     monkeypatch.setenv("OLLAMA_MODEL", "m")
 
-    assert llm.ask("oi") is None
+    assert llm.ask_ollama("oi") is None
 
 
 def test_ask_timeout_returns_none(ollama, monkeypatch):
     ollama.delay = 1
     monkeypatch.setenv("OLLAMA_TIMEOUT", "0.2")
 
-    assert llm.ask("oi") is None
+    assert llm.ask_ollama("oi") is None
 
 
 @pytest.mark.parametrize("reply", [b"isso nao e json", {"outro": 1}, {"response": "  "}, [1, 2]])
 def test_ask_bad_reply_returns_none(ollama, reply):
     ollama.reply = reply
 
-    assert llm.ask("oi") is None
+    assert llm.ask_ollama("oi") is None
 
 
 def make_db():

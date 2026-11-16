@@ -42,7 +42,7 @@ def connect(path: str | Path | None = None) -> sqlite3.Connection:
     path = str(path or default_path())
     if path != ":memory:":
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(path)
+    conn = sqlite3.connect(path, check_same_thread=False)  # uma conexão por requisição da API
     conn.row_factory = sqlite3.Row
     conn.executescript(SCHEMA)
     if "rule" not in {r["name"] for r in conn.execute("PRAGMA table_info(alerts)")}:
@@ -160,3 +160,21 @@ def clear_alerts(conn: sqlite3.Connection) -> None:
     """Apaga os alertas, para o pipeline poder reprocessar sem duplicar."""
     with conn:
         conn.execute("DELETE FROM alerts")
+
+
+def _count_by(conn: sqlite3.Connection, table: str, column: str) -> dict[str, int]:
+    rows = conn.execute(
+        f"SELECT {column}, COUNT(*) n FROM {table} GROUP BY {column} ORDER BY n DESC"
+    )
+    return {row[column]: row["n"] for row in rows}
+
+
+def metrics(conn: sqlite3.Connection) -> dict:
+    """Números para o painel: totais e quebras dos alertas por gravidade, detector e usuário."""
+    return {
+        "logs": conn.execute("SELECT COUNT(*) FROM logs").fetchone()[0],
+        "alerts": conn.execute("SELECT COUNT(*) FROM alerts").fetchone()[0],
+        "alerts_by_severity": _count_by(conn, "alerts", "severity"),
+        "alerts_by_detector": _count_by(conn, "alerts", "detector"),
+        "alerts_by_user": _count_by(conn, "alerts", "user"),
+    }

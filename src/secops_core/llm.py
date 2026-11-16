@@ -17,7 +17,7 @@ MAX_CONTEXT_LINES = 25
 MAX_TOKENS = 150  # a CPU gera ~5 tokens/s; limita a espera
 
 
-def ask(prompt: str) -> str | None:
+def ask_ollama(prompt: str) -> str | None:
     """Pergunta ao Ollama. Devolve None se ele não estiver configurado, não responder a
     tempo ou responder algo inútil: quem chama cai no template."""
     url, model = os.environ.get("OLLAMA_URL"), os.environ.get("OLLAMA_MODEL")
@@ -74,7 +74,7 @@ def build_prompt(alert: Alert, context: list[LogEvent]) -> str:
 
 
 def enhance(
-    conn: sqlite3.Connection, alert_id: int, ask: Callable[[str], str | None] = ask
+    conn: sqlite3.Connection, alert_id: int, ask: Callable[[str], str | None] | None = None
 ) -> str | None:
     """Explicação do alerta: template e, se o modelo responder, a análise dele. A versão
     com análise é guardada no banco; se o modelo falhar, devolve só o template e tenta
@@ -88,7 +88,7 @@ def enhance(
     context = db.get_logs(
         conn, alert.user, alert.timestamp - CONTEXT, alert.timestamp + CONTEXT, limit=500
     )
-    answer = ask(build_prompt(alert, context))
+    answer = (ask or ask_ollama)(build_prompt(alert, context))
     base = alert.explanation or explain(alert)
     if answer is None:
         return base
