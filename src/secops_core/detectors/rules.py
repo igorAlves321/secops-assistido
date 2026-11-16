@@ -5,14 +5,40 @@ from datetime import timedelta
 from secops_core.alert import Alert
 from secops_core.parser import LogEvent
 
-SENSITIVE_ACTIONS = {"StopLogging", "DeleteTrail", "AttachUserPolicy"}
+# Ações da API da AWS que mexem na própria segurança da conta, por tipo de risco.
+# Cada tipo vira uma regra, com o seu texto de explicação.
+SENSITIVE_RULES = {
+    "adulteracao_log": ("StopLogging", "DeleteTrail", "UpdateTrail", "PutEventSelectors"),
+    "escalada_privilegio": (
+        "AttachUserPolicy",
+        "PutUserPolicy",
+        "AttachRolePolicy",
+        "PutRolePolicy",
+        "CreateAccessKey",
+        "AddUserToGroup",
+        "UpdateAssumeRolePolicy",
+    ),
+    "s3_publico": (
+        "PutBucketAcl",
+        "PutBucketPolicy",
+        "PutBucketPublicAccessBlock",
+        "DeletePublicAccessBlock",
+    ),
+}
+RULE_OF_ACTION = {a: rule for rule, actions in SENSITIVE_RULES.items() for a in actions}
+ROOT_USER = "root"
 FAILED_LOGIN_LIMIT = 5  # falhas seguidas que viram alerta
 FAILED_LOGIN_GAP = timedelta(minutes=5)  # pausa maior que isso encerra a sequência
 
 
 def detect(events: list[LogEvent]) -> list[Alert]:
     """Regras determinísticas de CloudTrail. Devolve os alertas em ordem de horário."""
-    alerts = [*_sensitive_actions(events), *_failed_logins(events), *_external_ips(events)]
+    alerts = [
+        *_sensitive_actions(events),
+        *_root_activity(events),
+        *_failed_logins(events),
+        *_external_ips(events),
+    ]
     return sorted(alerts, key=lambda a: (a.timestamp, a.user))
 
 
@@ -24,10 +50,26 @@ def _sensitive_actions(events: list[LogEvent]) -> list[Alert]:
             e.user,
             e.timestamp,
             f"Ação sensível {e.action} por {e.user}",
-            rule="acao_sensivel",
+            rule=RULE_OF_ACTION[e.action],
         )
         for e in events
-        if e.action in SENSITIVE_ACTIONS
+        if e.action in RULE_OF_ACTION
+    ]
+
+
+def _root_activity(events: list[LogEvent]) -> list[Alert]:
+    """Qualquer uso do root é alerta: a conta root não deveria fazer o trabalho do dia a dia."""
+    return [
+        Alert(
+            "rules",
+            "high",
+            e.user,
+            e.timestamp,
+            f"Atividade do usuário root: {e.action} de {e.source_ip}",
+            rule="atividade_root",
+        )
+        for e in events
+        if e.user == ROOT_USER
     ]
 
 

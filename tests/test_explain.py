@@ -15,10 +15,19 @@ def make(rule, detector="rules", severity="high", score=None):
     return Alert(detector, severity, "alice", WHEN, "descrição do alerta", score=score, rule=rule)
 
 
-@pytest.mark.parametrize(
-    "rule",
-    ["acao_sensivel", "login_falho", "ip_externo", "volume", "atipico", None, "desconhecida"],
-)
+RULES = [
+    "adulteracao_log",
+    "escalada_privilegio",
+    "s3_publico",
+    "atividade_root",
+    "login_falho",
+    "ip_externo",
+    "volume",
+    "atipico",
+]
+
+
+@pytest.mark.parametrize("rule", [*RULES, None, "desconhecida"])
 def test_every_rule_renders_all_sections(rule):
     text = explain(make(rule, score=12.0))
 
@@ -29,7 +38,7 @@ def test_every_rule_renders_all_sections(rule):
 
 
 def test_text_mentions_user_severity_and_detector():
-    text = explain(make("acao_sensivel"))
+    text = explain(make("adulteracao_log"))
 
     assert "alice" in text
     assert "Gravidade: alta" in text
@@ -51,13 +60,7 @@ def test_pipeline_stores_an_explanation_for_every_alert():
     alerts = db.get_alerts(conn)
 
     assert alerts and all(a.explanation for a in alerts)
-    assert {a.rule for a in alerts} <= {
-        "acao_sensivel",
-        "login_falho",
-        "ip_externo",
-        "volume",
-        "atipico",
-    }
+    assert {a.rule for a in alerts} <= set(RULES)
 
 
 def test_old_database_gets_rule_column(tmp_path):

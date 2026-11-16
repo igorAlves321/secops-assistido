@@ -1,0 +1,6 @@
+{% extends "base.j2" %}
+{% block resumo %}{{ alert.description }}. Essa ação concede ou amplia permissões na conta.{% endblock %}
+{% block risco %}Uma credencial roubada costuma ser usada para dar mais poder a si mesma ou criar uma chave de acesso nova, que mantém o acesso do atacante mesmo depois de a senha ser trocada.{% endblock %}
+{% block acoes %}1. Confirmar com {{ alert.user }} se a mudança de permissão foi pedida.
+2. Se não foi, remover a política ou a chave criada e desativar as credenciais de {{ alert.user }}.
+3. Listar o que foi feito com as novas permissões.{% endblock %}

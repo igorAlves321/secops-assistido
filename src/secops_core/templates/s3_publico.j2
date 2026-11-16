@@ -1,0 +1,6 @@
+{% extends "base.j2" %}
+{% block resumo %}{{ alert.description }}. Essa ação muda quem pode acessar um bucket do S3.{% endblock %}
+{% block risco %}Remover o bloqueio de acesso público ou liberar uma política ampla pode expor dados a qualquer pessoa na internet.{% endblock %}
+{% block acoes %}1. Conferir no bucket se ele ficou público e restaurar o bloqueio de acesso público.
+2. Confirmar com {{ alert.user }} o motivo da mudança.
+3. Verificar nos logs de acesso se alguém externo leu os objetos.{% endblock %}

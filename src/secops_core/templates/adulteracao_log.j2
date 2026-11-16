@@ -1,0 +1,6 @@
+{% extends "base.j2" %}
+{% block resumo %}{{ alert.description }}. Essa ação desliga ou altera o registro de auditoria da conta.{% endblock %}
+{% block risco %}Sem o CloudTrail, o que acontece na conta deixa de ficar registrado. Atacantes costumam apagar o rastro logo depois de invadir uma credencial.{% endblock %}
+{% block acoes %}1. Confirmar com {{ alert.user }} se a ação foi intencional.
+2. Se não foi, reativar o logging e desativar as credenciais de {{ alert.user }}.
+3. Revisar o que {{ alert.user }} fez nas horas seguintes.{% endblock %}

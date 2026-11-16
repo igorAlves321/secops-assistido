@@ -48,6 +48,6 @@ def test_full_flow_through_the_api(tmp_path, monkeypatch):
     explanation = client.get(f"/alerts/{high[0]['id']}/explanation").json()
 
     assert summary["logs"] > 500 and summary["alertas"] >= 4
-    assert {a["rule"] for a in high} == {"acao_sensivel", "login_falho"}
+    assert {a["rule"] for a in high} == {"adulteracao_log", "escalada_privilegio", "login_falho"}
     assert explanation["ai"] is False and "O que fazer:" in explanation["explanation"]
     assert client.get("/metrics").json()["alerts_by_severity"]["high"] == len(high)

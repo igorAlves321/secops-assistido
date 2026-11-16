@@ -1,6 +1,0 @@
-{% extends "base.j2" %}
-{% block resumo %}{{ alert.description }}. Essa é uma ação que mexe na própria camada de segurança da conta.{% endblock %}
-{% block risco %}StopLogging e DeleteTrail apagam o rastro do que acontece na conta, e AttachUserPolicy pode conceder permissões amplas. Atacantes costumam usar essas ações logo depois de invadir uma credencial.{% endblock %}
-{% block acoes %}1. Confirmar com {{ alert.user }} se a ação foi intencional.
-2. Se não foi, desativar as credenciais de {{ alert.user }} e reativar o logging.
-3. Revisar tudo que {{ alert.user }} fez nas horas seguintes.{% endblock %}

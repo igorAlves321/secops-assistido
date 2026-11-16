@@ -1,0 +1,6 @@
+{% extends "base.j2" %}
+{% block resumo %}{{ alert.description }}.{% endblock %}
+{% block risco %}O usuário root tem poder total sobre a conta e não deveria ser usado no dia a dia. Qualquer uso é raro e merece conferência: pode ser uma credencial root vazada.{% endblock %}
+{% block acoes %}1. Confirmar com o responsável pela conta se o uso do root era esperado.
+2. Se não era, trocar a senha do root, ativar MFA e revogar as chaves de acesso do root.
+3. Revisar tudo que o root fez nesse período.{% endblock %}

@@ -1,5 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
+import pytest
+
 from secops_core.detectors.rules import detect
 from secops_core.generator import generate
 from secops_core.parser import LogEvent, parse_event
@@ -24,6 +26,35 @@ def test_sensitive_action_is_high():
 
     assert (alert.detector, alert.severity, alert.user) == ("rules", "high", "alice")
     assert "StopLogging" in alert.description
+
+
+@pytest.mark.parametrize(
+    ("action", "rule"),
+    [
+        ("UpdateTrail", "adulteracao_log"),
+        ("CreateAccessKey", "escalada_privilegio"),
+        ("PutRolePolicy", "escalada_privilegio"),
+        ("DeletePublicAccessBlock", "s3_publico"),
+        ("PutBucketPolicy", "s3_publico"),
+    ],
+)
+def test_sensitive_actions_pick_the_rule_of_their_risk(action, rule):
+    [alert] = detect([ev(action=action)])
+
+    assert (alert.rule, alert.severity) == (rule, "high")
+
+
+def test_any_root_activity_is_high():
+    [alert] = detect([ev(user="root", action="ListBuckets")])
+
+    assert (alert.rule, alert.severity, alert.user) == ("atividade_root", "high", "root")
+    assert "ListBuckets" in alert.description
+
+
+def test_root_doing_a_sensitive_action_raises_both_rules():
+    alerts = detect([ev(user="root", action="StopLogging")])
+
+    assert {a.rule for a in alerts} == {"adulteracao_log", "atividade_root"}
 
 
 def test_failed_login_burst_is_one_alert():
