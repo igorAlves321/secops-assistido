@@ -16,8 +16,65 @@ para portfólio e produção.
 
 ## Status
 
-Em preparação. O trabalho começa pelo Modo A; o Modo B vem depois que o núcleo estiver
-funcionando.
+**Modo A (local): completo.** Gerador, detecção, SQLite, explicação, API e dashboard
+funcionam de ponta a ponta, com testes (`make test`) e auditoria de acessibilidade
+(`make a11y`). O Modo B (AWS) ainda não foi começado.
+
+## Como funciona
+
+```
+gerador ──> logs_simulados.jsonl ──> parser ──> detectores ──> pipeline ──> SQLite
+                                                 │  regras CloudTrail          │
+                                                 │  Z-Score (volume/hora)      ├──> API FastAPI ──> dashboard
+                                                 └  Isolation Forest           │
+                                              explicação: templates Jinja2 + Ollama (opcional)
+```
+
+1. **Parser** (`parser.py`): valida e normaliza cada evento (`LogEvent`); linha inválida dá erro com o número dela.
+2. **Detectores** (`detectors/`): regras (ação sensível, 5+ logins falhos seguidos, sucesso de IP externo),
+   Z-Score do volume por usuário e hora, e Isolation Forest sobre o comportamento de cada evento.
+3. **Pipeline** (`pipeline.py`): roda os três, junta alertas do mesmo usuário com janelas que se
+   sobrepõem (fica o mais grave, com os detectores que concordaram) e grava no SQLite.
+4. **Explicação** (`explain.py`, `llm.py`): todo alerta tem uma explicação por template Jinja2, na hora.
+   Sob demanda, o Ollama acrescenta um resumo da atividade em volta do alerta; se ele falhar, vale o template.
+
+### API
+
+Documentação interativa em `/docs`.
+
+| Endpoint | O que faz |
+|---|---|
+| `POST /run` | lê `data/logs_simulados.jsonl`, roda os detectores e substitui os alertas |
+| `GET /alerts`, `GET /alerts/{id}` | alertas, com filtros `severity`, `detector` e `limit` |
+| `GET /alerts/{id}/explanation` | explicação por template; `?ai=true` pede também o resumo do Ollama (20 a 90 s) |
+| `GET /logs` | logs, com filtros `user`, `start`, `end` e `limit` |
+| `GET /metrics` | totais e quebras por gravidade, detector e usuário |
+
+### Limites que você precisa saber
+
+- **Os dados são sintéticos.** O gerador planta as anomalias que as regras conhecem; recall e precisão de
+  100% nos testes provam o funcionamento do pipeline, não a detecção de ataques reais.
+- **O Isolation Forest gera ruído** (cerca de 8 falsos positivos em 1.000 eventos, sempre `medium`).
+  Todo alerta `high` dos testes é um incidente real; filtre por gravidade.
+- **O resumo do Ollama não é confiável para dar veredito.** O modelo de 3B em CPU já chamou uma ação
+  sensível às 3h de "uso normal". Por isso o prompt só pede a descrição da atividade, e o texto sai
+  rotulado como "pode conter erros". O veredito vem das regras e dos templates.
+- A primeira chamada ao Ollama pode passar de 90 s (carga do modelo); depois, de 20 a 35 s em CPU.
+
+### Acessibilidade
+
+O dashboard é auditado contra WCAG 2.2 AA num Chromium real, com axe-core, em 1280 px e 320 px:
+
+```bash
+make a11y
+```
+
+Falha se achar qualquer violação (também confere idioma, títulos, reflow e se os gráficos renderizaram).
+Gráficos e tabelas são HTML próprio (`charts.py`): o dado sempre está em texto e o desenho é reforço.
+O tema (`.streamlit/config.toml`) garante o contraste. Limites do Streamlit que não dá para corrigir:
+os rótulos internos dos controles ("Main menu", "Collapse sidebar") ficam em inglês, e o
+`<html lang>` é corrigido por script. Testar com um leitor de tela de verdade (NVDA, VoiceOver) ainda
+é necessário: ferramentas automáticas cobrem só parte do WCAG.
 
 ## Ambiente
 
@@ -60,6 +117,7 @@ Para rodar testes e depurar pelo editor, use **Dev Containers: Reopen in Contain
 | `make editor` | atualiza a cópia das bibliotecas usada pelo editor |
 | `make generate` | gera `data/logs_simulados.jsonl` com tráfego normal e anomalias marcadas |
 | `make llm` | sobe o Ollama e baixa o modelo (`qwen2.5:3b`; `OLLAMA_MODEL=<nome> make llm` troca) |
+| `make a11y` | audita a acessibilidade do dashboard (WCAG 2.2 AA) num Chromium; baixa ~2 GB na primeira vez |
 | `make test` / `make lint` / `make format` | pytest, ruff check e ruff format no container |
 | `make add pkg=<nome>` | adiciona uma dependência e reconstrói a imagem |
 
