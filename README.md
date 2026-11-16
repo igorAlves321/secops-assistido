@@ -59,5 +59,12 @@ Para rodar testes e depurar pelo editor, use **Dev Containers: Reopen in Contain
 | `make logs` | acompanha os logs |
 | `make editor` | atualiza a cópia das bibliotecas usada pelo editor |
 | `make generate` | gera `data/logs_simulados.jsonl` com tráfego normal e anomalias marcadas |
+| `make llm` | sobe o Ollama e baixa o modelo (`qwen2.5:3b`; `OLLAMA_MODEL=<nome> make llm` troca) |
 | `make test` / `make lint` / `make format` | pytest, ruff check e ruff format no container |
 | `make add pkg=<nome>` | adiciona uma dependência e reconstrói a imagem |
+
+### IA local (opcional)
+
+O Ollama fica no profile `llm` do compose, então `./start.sh` não o sobe nem baixa o modelo
+(cerca de 2 GB). Sem ele, as explicações dos alertas vêm dos templates Jinja2. Para ligá-lo,
+rode `make llm` uma vez; o modelo fica guardado no volume `ollama`.

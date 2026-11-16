@@ -7,6 +7,8 @@ x-app: &app
   environment:
     SECOPS_DATA_DIR: /app/data
     WATCHFILES_FORCE_POLLING: "true"
+    OLLAMA_URL: http://ollama:11434
+    OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:3b}
 
 services:
   dev:
@@ -51,6 +53,11 @@ services:
       - "11434:11434"
     volumes:
       - ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
 volumes:
   ollama:
