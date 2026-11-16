@@ -3,13 +3,14 @@ RUN = docker compose run --rm dev
 OLLAMA_MODEL ?= qwen2.5:3b
 export OLLAMA_MODEL
 
-.PHONY: help build editor generate up down restart logs sh test lint format add llm
+.PHONY: help build editor generate up down restart logs sh test lint format add llm a11y
 
 help:
 	@echo "build    constroi a imagem"
 	@echo "editor   copia as bibliotecas para o editor (VS Code)"
 	@echo "generate gera data/logs_simulados.jsonl"
 	@echo "up       sobe api e dashboard"
+	@echo "a11y     audita a acessibilidade (WCAG 2.2 AA) do dashboard num Chromium"
 	@echo "llm      sobe o Ollama e baixa o modelo (OLLAMA_MODEL=<nome> troca)"
 	@echo "down     derruba tudo"
 	@echo "restart  reinicia api e dashboard"
@@ -39,6 +40,10 @@ down:
 llm:
 	docker compose --profile llm up -d --wait ollama
 	docker compose exec ollama ollama pull $(OLLAMA_MODEL)
+
+a11y:
+	docker compose up -d --wait api dashboard
+	docker compose --profile a11y run --rm a11y
 
 restart:
 	docker compose restart api dashboard
