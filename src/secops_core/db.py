@@ -1,6 +1,6 @@
 import os
 import sqlite3
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 
 from secops_core.alert import Alert
@@ -50,6 +50,11 @@ def connect(path: str | Path | None = None) -> sqlite3.Connection:
     return conn
 
 
+def _utc(when: datetime | None) -> str | None:
+    """Horários ficam no banco sempre em UTC, para a comparação de texto bater com a de datas."""
+    return when.astimezone(UTC).isoformat() if when else None
+
+
 def insert_logs(conn: sqlite3.Connection, events: list[LogEvent]) -> int:
     """Grava os eventos, ignorando duplicados. Devolve quantos eram novos."""
     before = conn.total_changes
@@ -58,7 +63,7 @@ def insert_logs(conn: sqlite3.Connection, events: list[LogEvent]) -> int:
             "INSERT OR IGNORE INTO logs (timestamp, user, source_ip, action, success, is_anomaly)"
             " VALUES (?, ?, ?, ?, ?, ?)",
             [
-                (e.timestamp.isoformat(), e.user, e.source_ip, e.action, e.success, e.is_anomaly)
+                (_utc(e.timestamp), e.user, e.source_ip, e.action, e.success, e.is_anomaly)
                 for e in events
             ],
         )
@@ -66,11 +71,17 @@ def insert_logs(conn: sqlite3.Connection, events: list[LogEvent]) -> int:
 
 
 def get_logs(
-    conn: sqlite3.Connection, user: str | None = None, limit: int = 1000
+    conn: sqlite3.Connection,
+    user: str | None = None,
+    start: datetime | None = None,
+    end: datetime | None = None,
+    limit: int = 1000,
 ) -> list[LogEvent]:
-    sql, args = "SELECT * FROM logs", []
-    if user:
-        sql, args = sql + " WHERE user = ?", [user]
+    """Logs em ordem de horário; `start` é inclusivo e `end` exclusivo."""
+    filters = {"user = ?": user, "timestamp >= ?": _utc(start), "timestamp < ?": _utc(end)}
+    where = [clause for clause, value in filters.items() if value]
+    sql = "SELECT * FROM logs" + (f" WHERE {' AND '.join(where)}" if where else "")
+    args = [value for value in filters.values() if value]
     rows = conn.execute(sql + " ORDER BY timestamp LIMIT ?", [*args, limit])
     return [
         LogEvent(
@@ -95,7 +106,7 @@ def insert_alerts(conn: sqlite3.Connection, alerts: list[Alert]) -> None:
                     a.detector,
                     a.severity,
                     a.user,
-                    a.timestamp.isoformat(),
+                    _utc(a.timestamp),
                     a.description,
                     a.score,
                     a.explanation,

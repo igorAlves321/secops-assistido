@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta, timezone
 
 import pytest
 
@@ -41,6 +41,23 @@ def test_get_logs_filters_by_user_and_limit(conn):
 
     assert {e.user for e in db.get_logs(conn, user="bruno")} == {"bruno"}
     assert len(db.get_logs(conn, limit=1)) == 1
+
+
+def test_get_logs_filters_by_time_range(conn):
+    db.insert_logs(conn, [event(minute=m) for m in (0, 10, 20, 30)])
+
+    got = db.get_logs(conn, start=WHEN.replace(minute=10), end=WHEN.replace(minute=30))
+
+    assert [e.timestamp.minute for e in got] == [10, 20]  # início inclusivo, fim exclusivo
+
+
+def test_timestamps_are_stored_in_utc(conn):
+    brt = datetime(2026, 1, 5, 6, 0, tzinfo=timezone(timedelta(hours=-3)))  # 09:00 UTC
+    db.insert_logs(conn, [LogEvent(brt, "alice", "10.0.1.11", "GetObject", True)])
+
+    [got] = db.get_logs(conn, start=WHEN, end=WHEN + timedelta(minutes=1))
+
+    assert got.timestamp == brt
 
 
 def test_alerts_roundtrip_gets_id(conn):
