@@ -15,6 +15,7 @@ from secops_core.parser import LogEvent, LogParseError, load_jsonl
 app = FastAPI(title="SecOps Assistido")
 
 Limit = Annotated[int, Query(ge=1, le=5000)]
+Offset = Annotated[int, Query(ge=0, description="itens a pular, para paginar")]
 
 
 def get_conn() -> Iterator[sqlite3.Connection]:
@@ -39,9 +40,11 @@ def logs(
     user: str | None = None,
     start: datetime | None = None,
     end: datetime | None = None,
+    action: str | None = None,
     limit: Limit = 1000,
+    offset: Offset = 0,
 ) -> list[LogEvent]:
-    return db.get_logs(conn, user.lower() if user else None, start, end, limit)
+    return db.get_logs(conn, user.lower() if user else None, start, end, limit, action, offset)
 
 
 @app.get("/alerts")
@@ -49,9 +52,14 @@ def alerts(
     conn: Conn,
     severity: Literal["low", "medium", "high"] | None = None,
     detector: Literal["rules", "zscore", "iforest"] | None = None,
+    user: str | None = None,
+    rule: str | None = None,
     limit: Limit = 1000,
+    offset: Offset = 0,
 ) -> list[Alert]:
-    return db.get_alerts(conn, severity, detector, limit)
+    return db.get_alerts(
+        conn, severity, detector, limit, user.lower() if user else None, rule, offset
+    )
 
 
 def _alert_or_404(conn: sqlite3.Connection, alert_id: int) -> Alert:

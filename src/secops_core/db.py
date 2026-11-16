@@ -76,13 +76,20 @@ def get_logs(
     start: datetime | None = None,
     end: datetime | None = None,
     limit: int = 1000,
+    action: str | None = None,
+    offset: int = 0,
 ) -> list[LogEvent]:
     """Logs em ordem de horário; `start` é inclusivo e `end` exclusivo."""
-    filters = {"user = ?": user, "timestamp >= ?": _utc(start), "timestamp < ?": _utc(end)}
+    filters = {
+        "user = ?": user,
+        "action = ?": action,
+        "timestamp >= ?": _utc(start),
+        "timestamp < ?": _utc(end),
+    }
     where = [clause for clause, value in filters.items() if value]
     sql = "SELECT * FROM logs" + (f" WHERE {' AND '.join(where)}" if where else "")
     args = [value for value in filters.values() if value]
-    rows = conn.execute(sql + " ORDER BY timestamp LIMIT ?", [*args, limit])
+    rows = conn.execute(sql + " ORDER BY timestamp, id LIMIT ? OFFSET ?", [*args, limit, offset])
     return [
         LogEvent(
             datetime.fromisoformat(r["timestamp"]),
@@ -136,14 +143,16 @@ def get_alerts(
     severity: str | None = None,
     detector: str | None = None,
     limit: int = 1000,
+    user: str | None = None,
+    rule: str | None = None,
+    offset: int = 0,
 ) -> list[Alert]:
-    filters = {"severity": severity, "detector": detector}
+    filters = {"severity": severity, "detector": detector, "user": user, "rule": rule}
     where = [f"{col} = ?" for col, value in filters.items() if value]
     sql = "SELECT * FROM alerts" + (f" WHERE {' AND '.join(where)}" if where else "")
     args = [value for value in filters.values() if value]
-    return [
-        _alert(r) for r in conn.execute(sql + " ORDER BY timestamp, id LIMIT ?", [*args, limit])
-    ]
+    rows = conn.execute(sql + " ORDER BY timestamp, id LIMIT ? OFFSET ?", [*args, limit, offset])
+    return [_alert(r) for r in rows]
 
 
 def get_alert(conn: sqlite3.Connection, alert_id: int) -> Alert | None:
